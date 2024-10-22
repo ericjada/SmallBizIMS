@@ -37,7 +37,7 @@ pip install bcrypt cryptography pandas matplotlib pillow python-barcode
 ### Cloning the Repository
 ```bash
 git clone https://github.com/ericjada/SmallBizIMS.git
-cd <repository-directory>
+cd SmallBizIMS
 ```
 
 ### Running the Application
