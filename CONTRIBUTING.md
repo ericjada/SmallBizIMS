@@ -36,7 +36,7 @@ To get started, fork the repository to your GitHub account and then clone it to 
 
 ```bash
 git clone https://github.com/ericjada/SmallBizIMS.git
-cd <repository-directory>
+cd SmallBizIMS
 ```
 
 ### Installing Dependencies
