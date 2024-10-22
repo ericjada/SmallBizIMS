@@ -1,80 +1,156 @@
 
-# Contributing to Inventory Management System (IMS)
+# Contributing to the Inventory Management System (IMS)
 
-Thank you for your interest in contributing to the Inventory Management System project! We welcome contributions from the community, and we're excited to work together to improve this project.
+We welcome contributions from the community to improve this project! Whether it's fixing bugs, adding new features, improving documentation, or helping with any other aspect, your input is highly valued.
 
-## How to Contribute
+This document outlines the guidelines and processes for contributing to the IMS project.
 
-There are several ways you can contribute to this project:
+## Table of Contents
 
-1. **Report Bugs**: If you find a bug, please report it by creating an issue in the GitHub repository. Provide as much detail as possible, including steps to reproduce the issue.
-2. **Request Features**: Have an idea for a new feature? Submit a feature request via GitHub issues.
-3. **Submit Code Changes**: If you'd like to contribute code, follow the process below to submit changes via pull request.
-4. **Improve Documentation**: Help improve the documentation, whether it's correcting typos or adding new sections.
+1. [Getting Started](#getting-started)
+2. [Reporting Issues](#reporting-issues)
+3. [Setting Up the Development Environment](#setting-up-the-development-environment)
+4. [Code Style and Guidelines](#code-style-and-guidelines)
+5. [Contributing Code](#contributing-code)
+6. [Testing](#testing)
+7. [Submitting a Pull Request](#submitting-a-pull-request)
+8. [Code of Conduct](#code-of-conduct)
 
-## Code Contribution Process
+---
 
-1. **Fork the Repository**: Start by forking the project repository to your own GitHub account.
-2. **Clone the Repository**: Clone your forked repository to your local development environment.
-   
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/ims.git
-   cd ims
-   ```
+## Getting Started
 
-3. **Create a Branch**: Create a new branch for your feature or bug fix.
+Before you start contributing, please take a moment to understand the project and its structure. The IMS is an application built using Python, `Tkinter` for the UI, `SQLite` for the database, and several other libraries such as `Pandas`, `Matplotlib`, and `Cryptography`.
 
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+### Prerequisites
 
-4. **Make Changes**: Implement your feature or bug fix, and make sure your code follows the project's coding standards.
-   
-5. **Write Tests**: If applicable, write tests for your changes.
-   
-6. **Commit Your Changes**: Commit your changes with clear and descriptive commit messages.
+To contribute, you need:
 
-   ```bash
-   git commit -m "Add feature: [feature description]"
-   ```
+- Python 3.6 or higher
+- SQLite
+- Pip (Python package manager)
 
-7. **Push Your Changes**: Push your branch to your forked repository.
+### Cloning the Repository
 
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+To get started, fork the repository to your GitHub account and then clone it to your local machine:
 
-8. **Create a Pull Request**: Go to the original repository on GitHub and submit a pull request. Describe your changes in detail and link any relevant issues.
+```bash
+git clone https://github.com/YOUR_USERNAME/ims.git
+cd ims
+```
 
-## Code Style Guidelines
+### Installing Dependencies
 
-- Follow PEP8 for Python code style.
-- Use meaningful variable and function names.
-- Keep code clean and well-documented with comments where necessary.
+Once you have cloned the repository, you need to install the project dependencies using `pip`:
 
-## Reporting Bugs
+```bash
+pip install -r requirements.txt
+```
 
-If you encounter a bug, please create an issue and include the following information:
-- **Description**: A detailed description of the issue.
-- **Steps to Reproduce**: Clear steps to replicate the bug.
-- **Expected Behavior**: What you expected to happen.
-- **Actual Behavior**: What actually happened.
-- **Screenshots**: Include screenshots if applicable.
-- **Environment**: Your operating system, Python version, and any other relevant details.
+This will install the necessary libraries such as `Tkinter`, `bcrypt`, `Pandas`, and more.
 
-## Feature Requests
+---
 
-When requesting a feature, please include:
-- A detailed description of the feature.
-- The problem it solves or the use case it addresses.
-- Any suggestions for implementation (if applicable).
+## Reporting Issues
+
+If you encounter any bugs, have feature requests, or questions about the project, feel free to open an issue in the repository. Please be as detailed as possible and include:
+
+1. A clear description of the issue.
+2. Steps to reproduce the problem.
+3. Screenshots (if applicable).
+4. Your operating system and Python version.
+
+---
+
+## Setting Up the Development Environment
+
+1. Install all required packages with `pip` as mentioned earlier.
+2. Ensure the SQLite database (`inventory_encrypted.db`) is set up correctly.
+3. Run the application by executing:
+
+```bash
+python main.py
+```
+
+You should now have the Inventory Management System running on your local machine.
+
+---
+
+## Code Style and Guidelines
+
+We follow **PEP8** for Python code styling. Before submitting your code, ensure that it adheres to these guidelines. Here are some key points:
+
+- Use 4 spaces for indentation.
+- Write descriptive comments and docstrings.
+- Keep function names and variable names meaningful.
+- Ensure that your code is well-documented and easy to understand.
+  
+To check your code style, you can use `flake8`:
+
+```bash
+pip install flake8
+flake8 .
+```
+
+---
+
+## Contributing Code
+
+### 1. Fork and Clone the Repository
+
+Fork the main repository and clone it to your local machine. Always work on a new branch for your changes:
+
+```bash
+git checkout -b feature-branch
+```
+
+### 2. Write Descriptive Commit Messages
+
+Commit messages should clearly explain what the change is and why it was made:
+
+```bash
+git commit -m "Add feature X to improve Y"
+```
+
+### 3. Add Documentation
+
+If your change introduces new functionality or modifies existing features, update the `README.md` and relevant docstrings to reflect the changes.
+
+### 4. Test Your Changes
+
+Before submitting your changes, make sure everything works as expected. Run the application locally and test the functionality you worked on.
+
+---
 
 ## Testing
 
-Make sure your changes do not break existing functionality. If you add new features, include tests where possible. We use `unittest` for Python testing. 
+We encourage the use of unit tests to verify the integrity of the codebase. Write tests for the new functionality you implement. You can run tests using:
 
-## License
+```bash
+python -m unittest discover
+```
 
-By contributing to this project, you agree that your contributions will be licensed under the MIT License.
+---
 
-We appreciate your time and effort in contributing to IMS. Thank you!
+## Submitting a Pull Request
+
+1. Ensure that your changes are working as expected and that you've followed the [Code Style and Guidelines](#code-style-and-guidelines).
+2. Push your changes to your forked repository:
+
+```bash
+git push origin feature-branch
+```
+
+3. Submit a pull request from your forked repository to the main repository. Please provide a detailed description of the changes you've made, why they were necessary, and how they were tested.
+
+---
+
+## Code of Conduct
+
+We expect all contributors to adhere to the [Code of Conduct](CODE_OF_CONDUCT.md) to ensure a positive environment for the community. Be respectful, collaborate in good faith, and communicate clearly.
+
+---
+
+## Thank You
+
+Thank you for considering contributing to the IMS project! We look forward to your input and collaboration.
