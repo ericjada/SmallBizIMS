@@ -118,5 +118,10 @@ This will launch the Inventory Management System's GUI.
 - **Issue**: CSV import/export errors.
   - **Solution**: Ensure that the CSV file is properly formatted with matching column names to the table you're importing/exporting from.
 
+## Disclaimer
+
+This project is provided "as is," without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+
+By using this software, you acknowledge that you are solely responsible for ensuring the system’s security, compliance, and suitability for your intended use case. The developers are not liable for any loss, damage, or legal issues resulting from the misuse of this software.
 
 
