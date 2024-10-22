@@ -168,7 +168,7 @@ class InventoryManagementSystem:
         Display the login window.
         """
         self.clear_window()
-        self.root.geometry("350x350")
+        self.root.geometry("350x300")
         self.root.resizable(False, False)
 
         # Login label
@@ -196,9 +196,6 @@ class InventoryManagementSystem:
         # Forgot password button
         tk.Button(self.root, text="Forgot Password?",
                   command=self.forgot_password_window, font=("Arial", 10)).pack()
-        # Create account button
-        tk.Button(self.root, text="Create Account",
-                  command=self.create_user_window, font=("Arial", 10)).pack(pady=5)
 
     def login(self):
         """
@@ -342,6 +339,7 @@ class InventoryManagementSystem:
             admin_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label='Admin', menu=admin_menu)
             admin_menu.add_command(label='Manage Users', command=self.manage_users)
+            admin_menu.add_command(label='Create New User', command=self.create_user_window)
             admin_menu.add_command(label='View Audit Trail', command=self.view_audit_trail)
 
         # Tab Control setup
