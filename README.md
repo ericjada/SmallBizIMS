@@ -1,122 +1,134 @@
 
 # SmallBizIMS Inventory Management System (IMS)
 
-This is a comprehensive Inventory Management System (IMS) built using Python and Tkinter for a graphical user interface. The system integrates with an SQLite database, supports user roles (admin, manager, and staff), and manages product, vendor, and purchase order data. It includes encryption for sensitive information and logging to track user actions.
+## Overview
+This Inventory Management System (IMS) is a Python-based desktop application developed using `Tkinter` for the graphical user interface (GUI). The application manages inventory, vendors, and purchase orders, along with generating reports. It includes user authentication with password hashing using `bcrypt`, account lockout mechanisms, and audit trails to track user actions.
+
+The IMS system also features data encryption, secure password handling, and basic password strength validation. It is integrated with SQLite for managing data and includes import/export functionality for CSV files.
 
 ## Features
-- **User Authentication**: Users can log in with their credentials, and roles determine their access level (admin, manager, staff).
-- **Products Management**: Add, update, delete, and search products. Each product has details like SKU, category, quantity, location, price, and barcode generation.
-- **Vendors Management**: Manage vendor information including contact details and lead times.
-- **Purchase Orders**: Create and receive purchase orders, linked with vendor and product information.
-- **Reports**: Generate reports such as inventory by category, products needing reorder, and vendor statistics.
-- **Audit Trail**: Admins can view an audit trail of user actions.
-- **Data Import/Export**: Import and export product and vendor data in CSV format.
+- **User Management**: Admins can create, update, and delete users. The system features role-based access control (admin, manager, staff).
+- **Product Management**: Add, update, delete, and search products. Products are tracked with attributes like SKU, name, description, quantity, reorder point, price, barcode, expiration date, and more.
+- **Vendor Management**: Manage vendors, including adding and updating vendor information (name, contact, email, address, lead time).
+- **Purchase Orders**: Create purchase orders for vendors, track status (ordered/received), and automatically update inventory when purchase orders are received.
+- **Reports**: Generate reports such as inventory reports, reorder reports, and vendor reports. Reports are saved in CSV format or as images.
+- **Security**: Password hashing, account lockout after multiple failed login attempts, and password reset with email verification.
+- **Audit Trail**: Log and track user actions like adding products, resetting passwords, etc.
 
 ## Technologies Used
-- **Tkinter**: Python's built-in GUI library used for the graphical interface.
-- **SQLite**: Database for storing inventory, user, vendor, and purchase order data.
-- **Bcrypt**: Used to hash user passwords.
-- **Cryptography (Fernet)**: Used to encrypt and decrypt sensitive information.
-- **Matplotlib**: Used for generating visual reports.
-- **Pandas**: For data manipulation during CSV import/export.
-- **Pillow**: Used for image manipulation (e.g., showing barcode images).
-- **Barcode Library**: Generates barcodes for products.
+- **Python**: The core programming language used to develop the application.
+- **Tkinter**: For the GUI components.
+- **SQLite**: For database management.
+- **bcrypt**: For password hashing.
+- **Fernet**: For encrypting sensitive data.
+- **Pandas**: For handling CSV imports and exports.
+- **Matplotlib**: For generating graphical reports.
+- **Pillow (PIL)**: For image processing (e.g., barcode images).
+- **Python Barcode**: For generating barcodes.
 
-## Setup Instructions
+## Installation and Setup
 
 ### Prerequisites
-- Python 3.6 or higher
-- Required Python Libraries:
-  - `bcrypt`
-  - `cryptography`
-  - `pandas`
-  - `matplotlib`
-  - `pillow`
-  - `python-barcode`
-  - `sqlite3` (builtin)
-  - `tkinter` (builtin)
-
-### Install Required Libraries
-
-To install the required libraries, run the following command:
-
+Ensure you have Python 3.x installed. You'll also need to install the following Python libraries:
 ```bash
 pip install bcrypt cryptography pandas matplotlib pillow python-barcode
 ```
 
-### Initial Setup
-1. **Encryption Key Generation**: On the first run, an encryption key (`key.key`) will be generated in the project directory.
-2. **Database Initialization**: The system will automatically create an SQLite database (`inventory_encrypted.db`) and the necessary tables if they do not already exist.
-3. **Admin User Creation**: A default admin user with username `admin` and password `admin` will be created on the first run.
+### Cloning the Repository
+```bash
+git clone <repository-url>
+cd <repository-directory>
+```
 
-### How to Run
-1. Clone the repository or download the code.
-2. Open a terminal and navigate to the project directory.
-3. Run the main Python file:
-
+### Running the Application
+To run the application, simply execute the `main.py` file:
 ```bash
 python main.py
 ```
 
-This will launch the Inventory Management System's GUI.
+## Database Initialization
+The application uses SQLite for managing data. Upon the first launch, the database (`inventory_encrypted.db`) will be automatically created along with the necessary tables. An initial admin user with the following credentials will be created:
+- **Username**: `admin`
+- **Password**: `Admin@123`
 
-## Usage
+You can change this user’s credentials once logged in.
 
-### Login
-- The system starts with a login window.
-- Use the default admin credentials for the first login: 
-  - Username: `admin`
-  - Password: `admin`
+## Features Explained
+
+### User Authentication and Security
+- **Login**: Users must provide their username and password to log in.
+- **Password Hashing**: Passwords are securely hashed using `bcrypt` before being stored in the database.
+- **Account Lockout**: After five consecutive failed login attempts, an account is locked for five minutes.
+- **Password Reset**: Users can reset their password by verifying their email. Passwords are validated for strength (at least 8 characters, includes uppercase, lowercase, digit, and special character).
 
 ### Product Management
-- Add new products with details such as SKU, name, quantity, location, and more.
-- Products can be updated, deleted, or searched.
-- Barcodes are generated automatically based on the product's SKU and displayed.
+Users can manage the inventory by adding, updating, deleting, and searching for products. Each product has the following attributes:
+- SKU (unique identifier)
+- Name
+- Description
+- Category
+- Subcategory
+- Attributes
+- Quantity
+- Location (warehouse, store, etc.)
+- Reorder point (alert when quantity falls below this)
+- Price
+- Barcode (automatically generated)
+- Serial numbers, Lot number, Expiration date
 
 ### Vendor Management
-- Add and manage vendors' details like contact information, pricing, and lead times.
-- Vendors can be searched and updated easily.
+Vendors are managed with the following attributes:
+- Name
+- Contact
+- Email
+- Address
+- Pricing info
+- Lead time
 
-### Purchase Orders
-- Create purchase orders by selecting a vendor and a product, and specifying the quantity.
-- Mark purchase orders as received, which updates product inventory automatically.
+### Purchase Order Management
+The system allows users to create purchase orders, track their status, and update inventory when orders are received.
 
-### Reports
-- Generate reports for inventory, reorder alerts, and vendor statistics.
-- Visual reports are displayed using Matplotlib and can be exported as CSV files.
+### Reports and Analytics
+The system provides several reports:
+- **Inventory Report**: Displays the current quantity of products by category.
+- **Reorder Report**: Displays products that have reached their reorder points.
+- **Vendor Report**: Displays vendor performance, including the total number of orders and total amount spent.
 
-### User Management
-- Admins can create, update, or delete users.
-- Each user is assigned a role (admin, manager, staff) that controls their access level.
+Reports can be viewed graphically or exported to CSV.
 
-### Data Import/Export
-- Import product or vendor data from CSV files.
-- Export the current product, vendor, or purchase order data to CSV.
+### Audit Trail
+Every important action in the system (such as login, logout, adding a product, creating a user, resetting a password) is logged in an audit trail. This trail can be viewed by users with admin privileges.
 
-## Logging
-- All user actions are logged in the `ims.log` file, with timestamps for auditing purposes.
+## Code Structure
+
+- **main.py**: The main file that launches the Inventory Management System.
+- **key.key**: The encryption key used for encrypting sensitive data.
+- **ims.log**: The log file that stores user actions and errors.
+- **reports/**: Directory where generated reports (CSV and images) are saved.
+- **exports/**: Directory where exported data is saved.
+- **inventory_encrypted.db**: The SQLite database file.
 
 ## Screenshots
 
-### Login Screen
-![Login Screen](./screenshots/login.png)
+### Login Window
+![Login Window](docs/screenshots/login.png)
 
 ### Main Window
-![Main Window](./screenshots/main_window.png)
+![Main Window](docs/screenshots/main.png)
 
 ### Product Management
-![Product Management](./screenshots/product_management.png)
+![Product Management](docs/screenshots/product_management.png)
 
-## Security
-- User passwords are securely hashed using Bcrypt.
-- Sensitive data like database credentials are encrypted using the Fernet encryption algorithm.
+### Reports
+![Reports](docs/screenshots/reports.png)
 
-## Troubleshooting
-- **Issue**: Cannot log in with the admin account.
-  - **Solution**: Ensure the database file `inventory_encrypted.db` is present and contains the admin user.
-  
-- **Issue**: CSV import/export errors.
-  - **Solution**: Ensure that the CSV file is properly formatted with matching column names to the table you're importing/exporting from.
+## Security Features
+- **Password Hashing**: User passwords are hashed using `bcrypt` to ensure they are not stored in plain text.
+- **Account Lockout**: After five failed login attempts, the account is locked for 5 minutes to prevent brute-force attacks.
+- **Password Reset**: Users must provide their email address to reset their password. The new password is subject to validation to ensure strength.
+
+## License
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
 ## Disclaimer
 
