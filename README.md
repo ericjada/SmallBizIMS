@@ -111,16 +111,19 @@ Every important action in the system (such as login, logout, adding a product, c
 ## Screenshots
 
 ### Login Window
-![Login Window](docs/screenshots/login.png)
-
-### Main Window
-![Main Window](docs/screenshots/main.png)
+![Login Window](screenshots\login_screen.png)
 
 ### Product Management
-![Product Management](docs/screenshots/product_management.png)
+![Product Management](screenshots\products_screen.png)
+
+### Purchase Orders
+![Purchase Orders](screenshots\purchase_screen.png)
 
 ### Reports
-![Reports](docs/screenshots/reports.png)
+![Reports](screenshots\reports_screen.png)
+
+### Vendors
+![Vendors](screenshots\vendors_screen.png)
 
 ## Security Features
 - **Password Hashing**: User passwords are hashed using `bcrypt` to ensure they are not stored in plain text.
