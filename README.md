@@ -136,4 +136,4 @@ This project is provided "as is," without warranty of any kind, express or impli
 
 By using this software, you acknowledge that you are solely responsible for ensuring the system’s security, compliance, and suitability for your intended use case. The developers are not liable for any loss, damage, or legal issues resulting from the misuse of this software.
 
-
+This project has been developed with the help of ChatGPT, an AI language model. While ChatGPT was used to assist with code generation, documentation, and design, all responsibility for the accuracy, functionality, and appropriateness of the code remains with the project maintainers.
