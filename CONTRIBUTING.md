@@ -35,8 +35,8 @@ To contribute, you need:
 To get started, fork the repository to your GitHub account and then clone it to your local machine:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ims.git
-cd ims
+git clone https://github.com/ericjada/SmallBizIMS.git
+cd <repository-directory>
 ```
 
 ### Installing Dependencies
