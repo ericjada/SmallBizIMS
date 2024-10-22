@@ -13,6 +13,8 @@ import logging
 import datetime
 import os
 from cryptography.fernet import Fernet
+import re  # For password validation
+import time  # For cooldown implementation
 
 # Setup logging configuration
 logging.basicConfig(filename='ims.log', level=logging.INFO,
@@ -47,7 +49,9 @@ def create_tables():
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             role TEXT NOT NULL,
-            email TEXT
+            email TEXT,
+            failed_attempts INTEGER DEFAULT 0,
+            lockout_time REAL DEFAULT 0
         )
     """)
     # Products table to store product information
@@ -120,7 +124,6 @@ def create_tables():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
-    # Commit changes to the database
     conn.commit()
 
 # Create database tables
@@ -132,11 +135,11 @@ def create_admin_user():
     """
     cursor.execute("SELECT * FROM users WHERE username = 'admin'")
     if not cursor.fetchone():
-        # Hash the default password 'admin'
-        hashed_pw = bcrypt.hashpw('admin'.encode('utf-8'), bcrypt.gensalt())
+        # Hash the default password 'Admin@123'
+        hashed_pw = bcrypt.hashpw('Admin@123'.encode('utf-8'), bcrypt.gensalt())
         # Insert the admin user into the users table
-        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                       ('admin', hashed_pw, 'admin'))
+        cursor.execute("INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+                       ('admin', hashed_pw, 'admin', 'admin@example.com'))
         conn.commit()
 
 # Create the initial admin user
@@ -157,6 +160,7 @@ class InventoryManagementSystem:
         self.current_user = None
         # List of locations for multi-location management
         self.locations = ['Warehouse A', 'Warehouse B', 'Store 1', 'Store 2']
+        self.failed_login_attempts = {}
         self.login_window()
 
     def login_window(self):
@@ -164,7 +168,7 @@ class InventoryManagementSystem:
         Display the login window.
         """
         self.clear_window()
-        self.root.geometry("350x300")
+        self.root.geometry("350x350")
         self.root.resizable(False, False)
 
         # Login label
@@ -192,10 +196,13 @@ class InventoryManagementSystem:
         # Forgot password button
         tk.Button(self.root, text="Forgot Password?",
                   command=self.forgot_password_window, font=("Arial", 10)).pack()
+        # Create account button
+        tk.Button(self.root, text="Create Account",
+                  command=self.create_user_window, font=("Arial", 10)).pack(pady=5)
 
     def login(self):
         """
-        Handle user login.
+        Handle user login with account lockout after multiple failed attempts.
         """
         username = self.entry_username.get()
         password = self.entry_password.get()
@@ -204,24 +211,52 @@ class InventoryManagementSystem:
             # Fetch user details from the database
             cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
             user = cursor.fetchone()
-            if user and bcrypt.checkpw(password.encode('utf-8'), user[2]):
-                # Set the current user
-                self.current_user = {'id': user[0], 'username': user[1], 'role': user[3]}
-                logging.info(f"User {username} logged in.")
-                self.insert_audit_trail('Login')
-                self.main_window()
+            if user:
+                # Check if account is locked
+                lockout_time = user[6]
+                current_time = time.time()
+                if lockout_time > current_time:
+                    remaining = int(lockout_time - current_time)
+                    messagebox.showerror("Account Locked",
+                                         f"Account is locked. Try again in {remaining} seconds.")
+                    return
+
+                # Verify password
+                if bcrypt.checkpw(password.encode('utf-8'), user[2]):
+                    # Reset failed attempts
+                    cursor.execute("UPDATE users SET failed_attempts = 0, lockout_time = 0 WHERE username = ?", (username,))
+                    conn.commit()
+                    # Set the current user
+                    self.current_user = {'id': user[0], 'username': user[1], 'role': user[3]}
+                    logging.info(f"User {username} logged in.")
+                    self.insert_audit_trail('Login')
+                    self.main_window()
+                else:
+                    # Increment failed attempts
+                    failed_attempts = user[5] + 1
+                    lockout_time = 0
+                    if failed_attempts >= 5:
+                        lockout_time = time.time() + 300  # Lock account for 5 minutes
+                        messagebox.showerror("Account Locked",
+                                             "Too many failed attempts. Account is locked for 5 minutes.")
+                    else:
+                        messagebox.showerror("Error", "Invalid username or password.")
+                    # Update failed attempts and lockout time
+                    cursor.execute("UPDATE users SET failed_attempts = ?, lockout_time = ? WHERE username = ?",
+                                   (failed_attempts, lockout_time, username))
+                    conn.commit()
+                    logging.warning(f"Failed login attempt for username: {username}")
             else:
                 messagebox.showerror("Error", "Invalid username or password.")
-                logging.warning(f"Failed login attempt for username: {username}")
         else:
             messagebox.showerror("Error", "Please enter your username and password.")
 
     def forgot_password_window(self):
         """
-        Display the forgot password window.
+        Display the forgot password window with email verification.
         """
         self.clear_window()
-        self.root.geometry("350x250")
+        self.root.geometry("400x300")
 
         tk.Label(self.root, text="Reset Password", font=("Arial", 20)).pack(pady=20)
 
@@ -234,11 +269,17 @@ class InventoryManagementSystem:
         self.entry_reset_username = tk.Entry(frame, font=("Arial", 12))
         self.entry_reset_username.grid(row=0, column=1, padx=5, pady=5)
 
+        # Email field for verification
+        tk.Label(frame, text="Email:", font=("Arial", 12)).grid(
+            row=1, column=0, sticky=tk.E, padx=5, pady=5)
+        self.entry_reset_email = tk.Entry(frame, font=("Arial", 12))
+        self.entry_reset_email.grid(row=1, column=1, padx=5, pady=5)
+
         # New password field
         tk.Label(frame, text="New Password:", font=("Arial", 12)).grid(
-            row=1, column=0, sticky=tk.E, padx=5, pady=5)
+            row=2, column=0, sticky=tk.E, padx=5, pady=5)
         self.entry_reset_password = tk.Entry(frame, show='*', font=("Arial", 12))
-        self.entry_reset_password.grid(row=1, column=1, padx=5, pady=5)
+        self.entry_reset_password.grid(row=2, column=1, padx=5, pady=5)
 
         # Reset password button
         tk.Button(self.root, text="Reset Password", command=self.reset_password,
@@ -249,16 +290,19 @@ class InventoryManagementSystem:
 
     def reset_password(self):
         """
-        Handle password reset functionality.
+        Handle password reset functionality with email verification.
         """
         username = self.entry_reset_username.get()
+        email = self.entry_reset_email.get()
         new_password = self.entry_reset_password.get()
 
-        if username and new_password:
-            # Check if the username exists
-            cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        if username and email and new_password:
+            # Check if the username and email exist
+            cursor.execute("SELECT * FROM users WHERE username = ? AND email = ?", (username, email))
             user = cursor.fetchone()
             if user:
+                if not self.validate_password_strength(new_password):
+                    return
                 # Update the password
                 hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
                 cursor.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_pw, username))
@@ -267,8 +311,8 @@ class InventoryManagementSystem:
                 logging.info(f"Password reset for username: {username}")
                 self.login_window()
             else:
-                messagebox.showerror("Error", "Username not found.")
-                logging.warning(f"Password reset attempt for non-existent username: {username}")
+                messagebox.showerror("Error", "Username and email do not match.")
+                logging.warning(f"Password reset attempt failed for username: {username}")
         else:
             messagebox.showerror("Error", "Please fill in all fields.")
 
@@ -298,7 +342,6 @@ class InventoryManagementSystem:
             admin_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label='Admin', menu=admin_menu)
             admin_menu.add_command(label='Manage Users', command=self.manage_users)
-            admin_menu.add_command(label='Create New User', command=self.create_user_window)
             admin_menu.add_command(label='View Audit Trail', command=self.view_audit_trail)
 
         # Tab Control setup
@@ -1082,6 +1125,12 @@ class InventoryManagementSystem:
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+        # Save the report to a file in the 'reports' folder
+        if not os.path.exists('reports'):
+            os.makedirs('reports')
+        fig.savefig('reports/inventory_report.png')
+        messagebox.showinfo("Report Saved", "Inventory report saved to 'reports/inventory_report.png'.")
+
     def reorder_report(self):
         """
         Generate and display a reorder report for products that need reordering.
@@ -1110,6 +1159,13 @@ class InventoryManagementSystem:
 
         for row in data:
             tree.insert('', 'end', values=row)
+
+        # Save the report to a CSV file in the 'reports' folder
+        if not os.path.exists('reports'):
+            os.makedirs('reports')
+        df = pd.DataFrame(data, columns=["Name", "SKU", "Quantity", "Reorder Point"])
+        df.to_csv('reports/reorder_report.csv', index=False)
+        messagebox.showinfo("Report Saved", "Reorder report saved to 'reports/reorder_report.csv'.")
 
     def vendor_report(self):
         """
@@ -1140,6 +1196,13 @@ class InventoryManagementSystem:
 
         for row in data:
             tree.insert('', 'end', values=row)
+
+        # Save the report to a CSV file in the 'reports' folder
+        if not os.path.exists('reports'):
+            os.makedirs('reports')
+        df = pd.DataFrame(data, columns=["Vendor", "Total Orders", "Total Spent"])
+        df.to_csv('reports/vendor_report.csv', index=False)
+        messagebox.showinfo("Report Saved", "Vendor report saved to 'reports/vendor_report.csv'.")
 
     # =========================== User Management ===========================
     def manage_users(self):
@@ -1203,7 +1266,7 @@ class InventoryManagementSystem:
         """
         self.new_user_window = tk.Toplevel(self.root)
         self.new_user_window.title("Create New User")
-        self.new_user_window.geometry("350x250")
+        self.new_user_window.geometry("400x300")
 
         tk.Label(self.new_user_window, text="Create New User", font=("Arial", 14)).pack(pady=10)
 
@@ -1235,7 +1298,7 @@ class InventoryManagementSystem:
 
     def create_user(self):
         """
-        Create a new user.
+        Create a new user with password strength validation.
         """
         username = self.entry_new_username.get()
         password = self.entry_new_password.get()
@@ -1243,6 +1306,8 @@ class InventoryManagementSystem:
         email = self.entry_new_email.get()
 
         if username and password and role:
+            if not self.validate_password_strength(password):
+                return
             hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             try:
                 # Insert user into the database
@@ -1275,7 +1340,7 @@ class InventoryManagementSystem:
 
     def add_user(self):
         """
-        Add a new user from the manage users window.
+        Add a new user from the manage users window with password strength validation.
         """
         username = self.entry_user_username.get()
         password = self.entry_user_password.get()
@@ -1283,6 +1348,8 @@ class InventoryManagementSystem:
         email = self.entry_user_email.get()
 
         if username and password and role:
+            if not self.validate_password_strength(password):
+                return
             hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             try:
                 # Insert user into the database
@@ -1315,6 +1382,8 @@ class InventoryManagementSystem:
             if username and role:
                 try:
                     if password:
+                        if not self.validate_password_strength(password):
+                            return
                         # Hash the new password
                         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
                         # Update user in the database
@@ -1448,11 +1517,13 @@ class InventoryManagementSystem:
 
     def export_data(self):
         """
-        Export data from the database to a CSV file.
+        Export data from the database to a CSV file in organized folders.
         """
         table = filedialog.askstring("Table Name", "Enter the table name to export data from:")
         if table in ['products', 'vendors', 'purchase_orders']:
-            file_path = filedialog.asksaveasfilename(defaultextension=".csv")
+            if not os.path.exists('exports'):
+                os.makedirs('exports')
+            file_path = filedialog.asksaveasfilename(initialdir='exports/', defaultextension=".csv")
             if file_path:
                 try:
                     cursor.execute(f"SELECT * FROM {table}")
@@ -1509,6 +1580,30 @@ class InventoryManagementSystem:
         cursor.execute("SELECT name FROM vendors")
         vendors = [row[0] for row in cursor.fetchall()]
         return vendors
+
+    def validate_password_strength(self, password):
+        """
+        Validate the strength of the password.
+        :param password: The password to validate.
+        :return: True if the password is strong, False otherwise.
+        """
+        # Password must be at least 8 characters long, contain uppercase, lowercase, digit, and special character
+        if len(password) < 8:
+            messagebox.showerror("Weak Password", "Password must be at least 8 characters long.")
+            return False
+        if not re.search(r"[A-Z]", password):
+            messagebox.showerror("Weak Password", "Password must contain at least one uppercase letter.")
+            return False
+        if not re.search(r"[a-z]", password):
+            messagebox.showerror("Weak Password", "Password must contain at least one lowercase letter.")
+            return False
+        if not re.search(r"\d", password):
+            messagebox.showerror("Weak Password", "Password must contain at least one digit.")
+            return False
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+            messagebox.showerror("Weak Password", "Password must contain at least one special character.")
+            return False
+        return True
 
     def __del__(self):
         """
